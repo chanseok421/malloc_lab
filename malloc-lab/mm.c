@@ -42,30 +42,29 @@ team_t team = {
 
 #define SIZE_T_SIZE (ALIGN(sizeof(size_t)))
 
-#define WSIZE 4
-#define DSIZE 8
-#define CHUNKSZIE (1<<12)
+#define WSIZE 4 //기본 단위 워드 크기 (4바이트)
+#define DSIZE 8 // 더블 워드 크기 (8바이트)
+#define CHUNKSZIE (1<<12) //기본적으로 힙을 확장할 때 요청하는 크기 (4096바이트 = 4kb)
 
-#define MAX (x,y) ((x) > (y) ? (x) : (y))
+#define MAX (x,y) ((x) > (y) ? (x) : (y)) //두 값 중 더 큰 값을 반환하는 매크로 
 
-#define PACK(size, alloc) ((size) | (alloc))
+#define PACK(size, alloc) ((size) | (alloc)) //주어진 size와 할당 여부 (alloc)를 하나의 값으로 패킹
 
-#define GET_SIZE(p)  (GET(p) & ~0x7)
-#define GET_ALLOC(p) (GET(p) & 0x1)
+#define GET_SIZE(p)  (GET(p) & ~0x7) //포인터 p가 가리키는 곳에서 읽은 값에서 사이즈만 추출 (하위 3비트 제거)
+#define GET_ALLOC(p) (GET(p) & 0x1) //포틴터 p가 가리키는 곳에서 읽은 값에서 할당 여부만 추출 (맨 마지막 비트)
 
-#define HDRP(bp) ((char *)(bp) -WSIZE)
-#define FTRP(bp) ((char *)(bp) + GET_SIZE(HDRP(bp)) -DSIZE)
-
-
-#define NEXT_BLKP(bp) ((char *)(bp) + GET_SIZE(((char *)(bp) -WSIZE)))
-#define PREV_BLKP(bp) ((char *)(bp) + GET_SIZE(((char *)(bp) -DSIZE)))
+#define HDRP(bp) ((char *)(bp) -WSIZE) //블록 포인터(bp)를 이용해 헤더 포인터를 반환 (헤더는 블록 시작보다 4바이트 앞에 위치)
+#define FTRP(bp) ((char *)(bp) + GET_SIZE(HDRP(bp)) -DSIZE) //블록 포인터(bp)를 이용해 풋터 포인터를 반환 (블록 끝 부분의 위치 계산)
 
 
+#define NEXT_BLKP(bp) ((char *)(bp) + GET_SIZE(((char *)(bp) -WSIZE))) //다음 블록의 블록 포인터를 반환
+#define PREV_BLKP(bp) ((char *)(bp) + GET_SIZE(((char *)(bp) -DSIZE))) //이전 블록의 블록 포인터를 반환
 
 /*
  * mm_init - initialize the malloc package.
  */
 int mm_init(void)
+
 {
     return 0;
 }
