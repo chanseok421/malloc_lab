@@ -1,6 +1,3 @@
-/*
- * mm-final.c - 명시적 가용 리스트 + 주소순서 삽입 + Best Fit + realloc 최적화
- */
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
