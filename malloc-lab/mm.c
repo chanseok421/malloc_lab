@@ -78,27 +78,37 @@ static void *extend_heap(size_t words)
 }
 
 /* add_free_block - 주소순서 삽입 */
-static void add_free_block(void *bp)
-{
-    void *cur = heap_listp;
-    void *prev = NULL;
+// static void add_free_block(void *bp)
+// {
+//     void *cur = heap_listp;
+//     void *prev = NULL;
 
-    while (cur != NULL && cur < bp) {
-        prev = cur;
-        cur = GET_SUCC(cur);
-    }
+//     while (cur != NULL && cur < bp) {
+//         prev = cur;
+//         cur = GET_SUCC(cur);
+//     }
 
-    if (prev != NULL)
-        GET_SUCC(prev) = bp;
-    else
-        heap_listp = bp;
+//     if (prev != NULL)
+//         GET_SUCC(prev) = bp;
+//     else
+//         heap_listp = bp;
 
-    if (cur != NULL)
-        GET_PRED(cur) = bp;
+//     if (cur != NULL)
+//         GET_PRED(cur) = bp;
 
-    GET_PRED(bp) = prev;
-    GET_SUCC(bp) = cur;
+//     GET_PRED(bp) = prev;
+//     GET_SUCC(bp) = cur;
+// }
+
+//LIFO
+static void add_free_block(void *bp) {
+    GET_SUCC(bp) = heap_listp;
+    if (heap_listp != NULL)
+        GET_PRED(heap_listp) = bp;
+    GET_PRED(bp) = NULL;
+    heap_listp = bp;
 }
+
 
 /* splice_free_block */
 static void splice_free_block(void *bp)
