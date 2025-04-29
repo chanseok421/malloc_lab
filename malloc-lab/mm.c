@@ -41,6 +41,9 @@ static void place(void *bp, size_t asize);
 static void add_free_block(void *bp);
 static void splice_free_block(void *bp);
 
+static void *last_fitp = NULL;
+
+
 /* mm_init */
 int mm_init(void)
 {
@@ -55,6 +58,8 @@ int mm_init(void)
     PUT(heap_listp + (6 * WSIZE), PACK(4 * WSIZE, 0));
     PUT(heap_listp + (7 * WSIZE), PACK(0, 1));
     heap_listp += (4 * WSIZE);
+
+    last_fitp = heap_listp;
 
     if (extend_heap(CHUNKSIZE / WSIZE) == NULL)
         return -1;
@@ -107,6 +112,8 @@ static void add_free_block(void *bp) {
         GET_PRED(heap_listp) = bp;
     GET_PRED(bp) = NULL;
     heap_listp = bp;
+
+    last_fitp = bp;
 }
 
 
@@ -120,6 +127,11 @@ static void splice_free_block(void *bp)
 
     if (GET_SUCC(bp))
         GET_PRED(GET_SUCC(bp)) = GET_PRED(bp);
+
+
+    if (last_fitp == bp)
+        last_fitp = NULL;
+
 }
 
 /* coalesce */
@@ -158,25 +170,40 @@ static void *coalesce(void *bp)
     return bp;
 }
 
-/* find_fit - Best Fit */
+
 static void *find_fit(size_t asize)
 {
-    void *bp = heap_listp;
-    void *best = NULL;
-    size_t best_size = (size_t)(-1);
+    void *bp;
+
+    if (last_fitp == NULL || GET_SIZE(HDRP(last_fitp)) == 0)
+        bp = heap_listp;
+    else
+        bp = GET_SUCC(last_fitp);
+
+    if (bp == NULL) bp = heap_listp;
+    void *start = bp;
 
     while (bp != NULL) {
-        size_t bsize = GET_SIZE(HDRP(bp));
-        if (!GET_ALLOC(HDRP(bp)) && bsize >= asize) {
-            if (bsize < best_size) {
-                best = bp;
-                best_size = bsize;
-            }
+        if (GET_SIZE(HDRP(bp)) == 0) break;
+
+        if (!GET_ALLOC(HDRP(bp)) && GET_SIZE(HDRP(bp)) >= asize) {
+            last_fitp = bp;
+            return bp;
         }
+
         bp = GET_SUCC(bp);
+        if (bp == NULL)
+            bp = heap_listp;
+
+        if (bp == start)
+            break;
     }
-    return best;
+
+    return NULL;
 }
+
+
+
 
 /* place */
 static void place(void *bp, size_t asize)
